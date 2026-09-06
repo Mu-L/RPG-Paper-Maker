@@ -43,7 +43,7 @@ class Object3D extends SpecialElement {
 		['gltfID', 'gid', -1, BINDING.NUMBER],
 		['mtlID', 'mid', -1, BINDING.NUMBER],
 		['collisionKind', 'ck', OBJECT_COLLISION_KIND.NONE, BINDING.NUMBER],
-		['collisionsCustomID', 'ccid', -1, BINDING.NUMBER],
+		['collisionCustomID', 'ccid', -1, BINDING.NUMBER],
 		['scale', 's', 1, BINDING.NUMBER],
 		['widthSquare', 'ws', 1, BINDING.NUMBER],
 		['widthPixel', 'wp', 0, BINDING.NUMBER],
