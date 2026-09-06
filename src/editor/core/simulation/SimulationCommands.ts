@@ -605,6 +605,7 @@ class CommandChangeVariables extends CommandBase {
 	private valueTerrainXPlus!: DynamicValue;
 	private valueTerrainYPlus!: DynamicValue;
 	private valueTerrainZPlus!: DynamicValue;
+	private coordinatesValueType: number = 0;
 	private isFloored: boolean;
 
 	constructor(command: MapObjectCommandType[], isLocal = false) {
@@ -649,6 +650,10 @@ class CommandChangeVariables extends CommandBase {
 				this.valueScript = String(command[iterator.i++]);
 				break;
 			case 11:
+				if (command[iterator.i] === 'object-id-at-coordinates') {
+					iterator.i++;
+					this.coordinatesValueType = 1;
+				}
 				this.valueTerrainX = DynamicValue.createCommand(command, iterator);
 				this.valueTerrainY = DynamicValue.createCommand(command, iterator);
 				this.valueTerrainZ = DynamicValue.createCommand(command, iterator);
@@ -712,7 +717,7 @@ class CommandChangeVariables extends CommandBase {
 				}
 				break;
 			case 11:
-				value = 0;
+				value = this.coordinatesValueType === 0 ? 0 : -1;
 				break;
 			default:
 				return 1;

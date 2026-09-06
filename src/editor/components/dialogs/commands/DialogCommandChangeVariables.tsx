@@ -58,6 +58,13 @@ enum SELECTION_VALUE_TYPE {
 	TERRAIN_AT_COORDINATES = 11,
 }
 
+enum COORDINATES_VALUE_TYPE {
+	TERRAIN,
+	OBJECT_ID,
+}
+
+const OBJECT_ID_AT_COORDINATES_TAG = 'object-id-at-coordinates';
+
 function DialogCommandChangeVariables({ commandKind, setIsOpen, list, onAccept, onReject }: CommandProps) {
 	const { t } = useTranslation();
 	const localVariables = useContext(LocalVariablesContext);
@@ -98,6 +105,7 @@ function DialogCommandChangeVariables({ commandKind, setIsOpen, list, onAccept, 
 	const [valueTerrainXPlus] = useStateDynamicValue();
 	const [valueTerrainYPlus] = useStateDynamicValue();
 	const [valueTerrainZPlus] = useStateDynamicValue();
+	const [coordinatesValueType, setCoordinatesValueType] = useStateNumber();
 	const [isFloored, setIsFloored] = useStateBool();
 	const [, setTrigger] = useStateBool();
 
@@ -145,6 +153,7 @@ function DialogCommandChangeVariables({ commandKind, setIsOpen, list, onAccept, 
 		valueTerrainYPlus.updateToDefaultNumber();
 		valueTerrainZPlus.updateToDefaultNumber();
 		setIsFloored(false);
+		setCoordinatesValueType(COORDINATES_VALUE_TYPE.TERRAIN);
 		if (list) {
 			const iterator = Utils.generateIterator();
 			if (isLocal) {
@@ -198,7 +207,7 @@ function DialogCommandChangeVariables({ commandKind, setIsOpen, list, onAccept, 
 					valueHeroEnemyInstanceID.updateCommand(list, iterator);
 					valueStatisticID.updateCommand(list, iterator);
 					break;
-				case SELECTION_VALUE_TYPE.OBJECT_CHARACTERISTIC:
+				case SELECTION_VALUE_TYPE.OBJECT_CHARACTERISTIC: {
 					valueObjectID.updateCommand(list, iterator);
 					const characteristic = list[iterator.i++] as number;
 					setValueObjectCharacteristicIndex(characteristic);
@@ -206,6 +215,7 @@ function DialogCommandChangeVariables({ commandKind, setIsOpen, list, onAccept, 
 						valueObjectPropertyID.updateCommand(list, iterator);
 					}
 					break;
+				}
 				case SELECTION_VALUE_TYPE.ENEMY_INSTANCE_ID:
 					setValueEnemyID(TroopMonster.currentMonsters[list[iterator.i++] as number]?.id ?? -1);
 					break;
@@ -216,6 +226,10 @@ function DialogCommandChangeVariables({ commandKind, setIsOpen, list, onAccept, 
 					setValueScript(list[iterator.i++] as string);
 					break;
 				case SELECTION_VALUE_TYPE.TERRAIN_AT_COORDINATES:
+					if (list[iterator.i] === OBJECT_ID_AT_COORDINATES_TAG) {
+						iterator.i++;
+						setCoordinatesValueType(COORDINATES_VALUE_TYPE.OBJECT_ID);
+					}
 					valueTerrainX.updateCommand(list, iterator);
 					valueTerrainY.updateCommand(list, iterator);
 					valueTerrainZ.updateCommand(list, iterator);
@@ -350,6 +364,9 @@ function DialogCommandChangeVariables({ commandKind, setIsOpen, list, onAccept, 
 				newList.push(valueScript);
 				break;
 			case SELECTION_VALUE_TYPE.TERRAIN_AT_COORDINATES:
+				if (coordinatesValueType === COORDINATES_VALUE_TYPE.OBJECT_ID) {
+					newList.push(OBJECT_ID_AT_COORDINATES_TAG);
+				}
 				valueTerrainX.getCommand(newList);
 				valueTerrainY.getCommand(newList);
 				valueTerrainZ.getCommand(newList);
@@ -634,78 +651,93 @@ function DialogCommandChangeVariables({ commandKind, setIsOpen, list, onAccept, 
 							</Value>
 							<Label>
 								<RadioButton value={SELECTION_VALUE_TYPE.TERRAIN_AT_COORDINATES}>
-									{t('terrain')}
+									{t('value.at.position')}
 								</RadioButton>
 							</Label>
 							<Value>
-								<Form>
-									<Label disabled={!isTerrainAtCoordinates}>X</Label>
-									<Value>
-										<Flex columnMobile spaced>
-											<Flex spaced centerV>
-												<DynamicValueSelector
-													value={valueTerrainX}
-													optionsType={DYNAMIC_VALUE_OPTIONS_TYPE.NUMBER}
-													disabled={!isTerrainAtCoordinates}
-												/>
-												<Flex disabledLabel={!isTerrainAtCoordinates}>{t('square.s')}</Flex>
+								<Flex column spaced>
+									<Flex>
+										<Dropdown
+											selectedID={coordinatesValueType}
+											onChange={setCoordinatesValueType}
+											options={[
+												Model.Base.create(COORDINATES_VALUE_TYPE.TERRAIN, t('terrain')),
+												Model.Base.create(COORDINATES_VALUE_TYPE.OBJECT_ID, t('object.id')),
+											]}
+											disabled={!isTerrainAtCoordinates}
+										/>
+										<Flex one />
+									</Flex>
+
+									<Form>
+										<Label disabled={!isTerrainAtCoordinates}>X</Label>
+										<Value>
+											<Flex columnMobile spaced>
+												<Flex spaced centerV>
+													<DynamicValueSelector
+														value={valueTerrainX}
+														optionsType={DYNAMIC_VALUE_OPTIONS_TYPE.NUMBER}
+														disabled={!isTerrainAtCoordinates}
+													/>
+													<Flex disabledLabel={!isTerrainAtCoordinates}>{t('square.s')}</Flex>
+												</Flex>
+												<Flex disabledLabel={!isTerrainAtCoordinates}>+</Flex>
+												<Flex spaced centerV>
+													<DynamicValueSelector
+														value={valueTerrainXPlus}
+														optionsType={DYNAMIC_VALUE_OPTIONS_TYPE.NUMBER}
+														disabled={!isTerrainAtCoordinates}
+													/>
+													<Flex disabledLabel={!isTerrainAtCoordinates}>{t('pixel.s')}</Flex>
+												</Flex>
 											</Flex>
-											<Flex disabledLabel={!isTerrainAtCoordinates}>+</Flex>
-											<Flex spaced centerV>
-												<DynamicValueSelector
-													value={valueTerrainXPlus}
-													optionsType={DYNAMIC_VALUE_OPTIONS_TYPE.NUMBER}
-													disabled={!isTerrainAtCoordinates}
-												/>
-												<Flex disabledLabel={!isTerrainAtCoordinates}>{t('pixel.s')}</Flex>
+										</Value>
+										<Label disabled={!isTerrainAtCoordinates}>Y</Label>
+										<Value>
+											<Flex columnMobile spaced>
+												<Flex spaced centerV>
+													<DynamicValueSelector
+														value={valueTerrainY}
+														optionsType={DYNAMIC_VALUE_OPTIONS_TYPE.NUMBER}
+														disabled={!isTerrainAtCoordinates}
+													/>
+													<Flex disabledLabel={!isTerrainAtCoordinates}>{t('square.s')}</Flex>
+												</Flex>
+												<Flex disabledLabel={!isTerrainAtCoordinates}>+</Flex>
+												<Flex spaced centerV>
+													<DynamicValueSelector
+														value={valueTerrainYPlus}
+														optionsType={DYNAMIC_VALUE_OPTIONS_TYPE.NUMBER}
+														disabled={!isTerrainAtCoordinates}
+													/>
+													<Flex disabledLabel={!isTerrainAtCoordinates}>{t('pixel.s')}</Flex>
+												</Flex>
 											</Flex>
-										</Flex>
-									</Value>
-									<Label disabled={!isTerrainAtCoordinates}>Y</Label>
-									<Value>
-										<Flex columnMobile spaced>
-											<Flex spaced centerV>
-												<DynamicValueSelector
-													value={valueTerrainY}
-													optionsType={DYNAMIC_VALUE_OPTIONS_TYPE.NUMBER}
-													disabled={!isTerrainAtCoordinates}
-												/>
-												<Flex disabledLabel={!isTerrainAtCoordinates}>{t('square.s')}</Flex>
+										</Value>
+										<Label disabled={!isTerrainAtCoordinates}>Z</Label>
+										<Value>
+											<Flex columnMobile spaced>
+												<Flex spaced centerV>
+													<DynamicValueSelector
+														value={valueTerrainZ}
+														optionsType={DYNAMIC_VALUE_OPTIONS_TYPE.NUMBER}
+														disabled={!isTerrainAtCoordinates}
+													/>
+													<Flex disabledLabel={!isTerrainAtCoordinates}>{t('square.s')}</Flex>
+												</Flex>
+												<Flex disabledLabel={!isTerrainAtCoordinates}>+</Flex>
+												<Flex spaced centerV>
+													<DynamicValueSelector
+														value={valueTerrainZPlus}
+														optionsType={DYNAMIC_VALUE_OPTIONS_TYPE.NUMBER}
+														disabled={!isTerrainAtCoordinates}
+													/>
+													<Flex disabledLabel={!isTerrainAtCoordinates}>{t('pixel.s')}</Flex>
+												</Flex>
 											</Flex>
-											<Flex disabledLabel={!isTerrainAtCoordinates}>+</Flex>
-											<Flex spaced centerV>
-												<DynamicValueSelector
-													value={valueTerrainYPlus}
-													optionsType={DYNAMIC_VALUE_OPTIONS_TYPE.NUMBER}
-													disabled={!isTerrainAtCoordinates}
-												/>
-												<Flex disabledLabel={!isTerrainAtCoordinates}>{t('pixel.s')}</Flex>
-											</Flex>
-										</Flex>
-									</Value>
-									<Label disabled={!isTerrainAtCoordinates}>Z</Label>
-									<Value>
-										<Flex columnMobile spaced>
-											<Flex spaced centerV>
-												<DynamicValueSelector
-													value={valueTerrainZ}
-													optionsType={DYNAMIC_VALUE_OPTIONS_TYPE.NUMBER}
-													disabled={!isTerrainAtCoordinates}
-												/>
-												<Flex disabledLabel={!isTerrainAtCoordinates}>{t('square.s')}</Flex>
-											</Flex>
-											<Flex disabledLabel={!isTerrainAtCoordinates}>+</Flex>
-											<Flex spaced centerV>
-												<DynamicValueSelector
-													value={valueTerrainZPlus}
-													optionsType={DYNAMIC_VALUE_OPTIONS_TYPE.NUMBER}
-													disabled={!isTerrainAtCoordinates}
-												/>
-												<Flex disabledLabel={!isTerrainAtCoordinates}>{t('pixel.s')}</Flex>
-											</Flex>
-										</Flex>
-									</Value>
-								</Form>
+										</Value>
+									</Form>
+								</Flex>
 							</Value>
 							<Label>
 								<RadioButton value={SELECTION_VALUE_TYPE.SCRIPT}>{t('script')}</RadioButton>

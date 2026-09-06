@@ -2700,13 +2700,17 @@ class MapObjectCommand extends Base {
 				str += `${t('script')}: ${this.command[iterator.i++]}`;
 				break;
 			case 11: {
+				const isObjectID = this.command[iterator.i] === 'object-id-at-coordinates';
+				if (isObjectID) {
+					iterator.i++;
+				}
 				const x = this.toStringDynamicValue(iterator, properties, parameters);
 				const y = this.toStringDynamicValue(iterator, properties, parameters);
 				const z = this.toStringDynamicValue(iterator, properties, parameters);
 				const xPixels = this.toStringDynamicValue(iterator, properties, parameters);
 				const yPixels = this.toStringDynamicValue(iterator, properties, parameters);
 				const zPixels = this.toStringDynamicValue(iterator, properties, parameters);
-				str += `${t('terrain').toLowerCase()} (${t('x.square.position').toLowerCase()}: ${x}, ${t(
+				str += `${t(isObjectID ? 'object.id' : 'terrain').toLowerCase()} (${t('x.square.position').toLowerCase()}: ${x}, ${t(
 					'x.pixel.position',
 				).toLowerCase()}: ${xPixels}, ${t('y.square.position').toLowerCase()}: ${y}, ${t(
 					'y.pixel.position',
@@ -2810,13 +2814,17 @@ class MapObjectCommand extends Base {
 				text += `${t('script')}: ${this.command[iterator.i++]}`;
 				break;
 			case 11: {
+				const isObjectID = this.command[iterator.i] === 'object-id-at-coordinates';
+				if (isObjectID) {
+					iterator.i++;
+				}
 				const x = this.toStringDynamicValue(iterator, properties, parameters);
 				const y = this.toStringDynamicValue(iterator, properties, parameters);
 				const z = this.toStringDynamicValue(iterator, properties, parameters);
 				const xPixels = this.toStringDynamicValue(iterator, properties, parameters);
 				const yPixels = this.toStringDynamicValue(iterator, properties, parameters);
 				const zPixels = this.toStringDynamicValue(iterator, properties, parameters);
-				text += `${t('terrain').toLowerCase()} (${t('x.square.position').toLowerCase()}: ${x}, ${t(
+				text += `${t(isObjectID ? 'object.id' : 'terrain').toLowerCase()} (${t('x.square.position').toLowerCase()}: ${x}, ${t(
 					'x.pixel.position',
 				).toLowerCase()}: ${xPixels}, ${t('y.square.position').toLowerCase()}: ${y}, ${t(
 					'y.pixel.position',
