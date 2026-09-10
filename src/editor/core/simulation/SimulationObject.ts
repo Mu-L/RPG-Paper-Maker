@@ -361,6 +361,16 @@ class SimulationObject {
 				break;
 			}
 			case ELEMENT_MAP_KIND.OBJECT3D: {
+				const position = this.basePosition.clone();
+				position.layer += state.layer.getFixNumberValue() - 1;
+				position.centerX = state.centerX.getFixNumberValue();
+				position.centerZ = state.centerZ.getFixNumberValue();
+				position.angleX = state.angleX.getFixNumberValue();
+				position.angleY = state.angleY.getFixNumberValue();
+				position.angleZ = state.angleZ.getFixNumberValue();
+				position.scaleX = state.scaleX.getFixNumberValue();
+				position.scaleY = state.scaleY.getFixNumberValue();
+				position.scaleZ = state.scaleZ.getFixNumberValue();
 				if (isGltf && objectData) {
 					const shape = Project.current!.shapes.getByID(CUSTOM_SHAPE_KIND.GLTF, objectData.gltfID);
 					if (!shape?.gltfScene) {
@@ -369,16 +379,12 @@ class SimulationObject {
 					}
 					const clone = shape.gltfScene.clone(true);
 					const scale = objectData.scale;
-					clone.scale.set(
-						scale * this.basePosition.scaleX,
-						scale * this.basePosition.scaleY,
-						scale * this.basePosition.scaleZ,
-					);
-					clone.position.copy(MapElement.Object3D.create(objectData).getLocalPosition(this.basePosition));
+					clone.scale.set(scale * position.scaleX, scale * position.scaleY, scale * position.scaleZ);
+					clone.position.copy(MapElement.Object3D.create(objectData).getLocalPosition(position));
 					clone.rotation.set(
-						(this.basePosition.angleX * Math.PI) / 180,
-						(this.basePosition.angleY * Math.PI) / 180,
-						(this.basePosition.angleZ * Math.PI) / 180,
+						(position.angleX * Math.PI) / 180,
+						(position.angleY * Math.PI) / 180,
+						(position.angleZ * Math.PI) / 180,
 					);
 					clone.traverse((child) => {
 						if (child instanceof THREE.Mesh) {
@@ -411,7 +417,7 @@ class SimulationObject {
 					const object3D = MapElement.Object3D.create(
 						Project.current!.specialElements.getObject3DByID(state.graphicsID),
 					);
-					object3D.updateGeometry(geometryObject3D, this.basePosition, 0);
+					object3D.updateGeometry(geometryObject3D, position, 0);
 					geometryObject3D.updateAttributes();
 					mesh = new THREE.Mesh(geometryObject3D, this.applyPreviewEffect(material));
 					this.meshIsFace = false;
