@@ -168,12 +168,8 @@ class Object3DBox extends Object3D {
 	getLocalPosition(position: Position): THREE.Vector3 {
 		const localPosition = position.toVector3(false);
 		if (this.data.isTopLeft) {
-			localPosition.setX(
-				localPosition.x - 0.5 + position.getPixelsCenterX() + Object3DBox.COEF,
-			);
-			localPosition.setZ(
-				localPosition.z - 0.5 + position.getPixelsCenterZ() + Object3DBox.COEF,
-			);
+			localPosition.setX(localPosition.x - 0.5 + position.getPixelsCenterX() + Object3DBox.COEF);
+			localPosition.setZ(localPosition.z - 0.5 + position.getPixelsCenterZ() + Object3DBox.COEF);
 		} else {
 			localPosition.setX(localPosition.x + position.getPixelsCenterX() + Object3DBox.COEF);
 			localPosition.setZ(localPosition.z + position.getPixelsCenterZ() + Object3DBox.COEF);
@@ -183,12 +179,7 @@ class Object3DBox extends Object3D {
 	}
 
 	getPositionFromVec3(vec: THREE.Vector3, rotation: THREE.Euler, scale: THREE.Vector3): Position {
-		const v = vec.clone();
-		if (this.data.isTopLeft) {
-			v.setX(v.x + 0.5);
-			v.setZ(v.z + 0.5);
-		}
-		return Position.createFromVector3(v, rotation, scale);
+		return Position.createFromVector3(vec, rotation, scale);
 	}
 
 	getAdditionalX(): number {
@@ -201,6 +192,13 @@ class Object3DBox extends Object3D {
 
 	updateGeometry(geometry: CustomGeometry, position: Position, count: number): number {
 		const localPosition = this.getLocalPosition(position);
+		const rotationCenter = this.data.isTopLeft
+			? new THREE.Vector3(
+					localPosition.x + 0.5 - Object3DBox.COEF,
+					localPosition.y,
+					localPosition.z + 0.5 - Object3DBox.COEF,
+				)
+			: localPosition;
 		const size = this.data.getSizeVector().multiply(position.toScaleVector());
 		size.setX(size.x - 2 * Object3DBox.COEF);
 		size.setY(size.y - 2 * Object3DBox.COEF);
@@ -244,7 +242,7 @@ class Object3DBox extends Object3D {
 			const texB = new THREE.Vector2(textures[tB[0]], textures[tB[1]]);
 			const texC = new THREE.Vector2(textures[tC[0]], textures[tC[1]]);
 			const texD = new THREE.Vector2(textures[tD[0]], textures[tD[1]]);
-			Base.rotateQuadEuler(vecA, vecB, vecC, vecD, localPosition, position.toRotationEuler());
+			Base.rotateQuadEuler(vecA, vecB, vecC, vecD, rotationCenter, position.toRotationEuler());
 			count = Sprite.addStaticSpriteToGeometry(
 				geometry,
 				vecA,

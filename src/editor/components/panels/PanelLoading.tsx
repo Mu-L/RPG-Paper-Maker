@@ -154,7 +154,7 @@ function PanelLoading({ setLoaded }: Props) {
 	};
 
 	const initializeEngineVersion = async () => {
-		Project.VERSION = await readPublicFile(Paths.FILE_VERSION);
+		Project.VERSION = (await readPublicFile(Paths.FILE_VERSION)).trim();
 		document.title = `RPG Paper Maker - ${Project.VERSION}`;
 		if (EngineSettings.current.lastEngineVersion !== Project.VERSION) {
 			const version = EngineSettings.current.lastEngineVersion;

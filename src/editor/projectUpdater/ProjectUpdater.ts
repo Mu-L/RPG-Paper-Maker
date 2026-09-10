@@ -45,6 +45,7 @@ class ProjectUpdater {
 		'3.1.9',
 		'3.1.10',
 		'3.1.15',
+		'3.2.14',
 	];
 
 	static isIncompatibleVersion(version: string) {
@@ -69,13 +70,14 @@ class ProjectUpdater {
 		version: string,
 		callback: (current: number, total: number, label?: string, extraPercent?: number) => void,
 	): Promise<string | null> {
+		const currentVersion = version.trim();
 		const projectPath = Project.current!.getPath();
-		callback(0, 100, `Copying project to ${projectPath}_${version}...`);
-		await copyFolder(projectPath, `${projectPath}_${version}`);
+		callback(0, 100, `Copying project to ${projectPath}_${currentVersion}...`);
+		await copyFolder(projectPath, `${projectPath}_${currentVersion}`);
 		const versions = [];
 		for (let i = this.versions.length - 1; i >= 0; i--) {
 			const newVersion = this.versions[i];
-			if (this.checkVersion(version, newVersion)) {
+			if (this.checkVersion(currentVersion, newVersion)) {
 				versions.unshift(newVersion);
 			}
 		}
@@ -86,9 +88,15 @@ class ProjectUpdater {
 			if (updaterClass && typeof updaterClass.update === 'function') {
 				const label = `Updating to version ${newVersion}...`;
 				callback(index, versions.length, label);
+				const data =
+					newVersion === '3.2.14'
+						? {
+								specialElements: await readJSON(Paths.join(projectPath, Paths.FILE_SPECIAL_ELEMENTS)),
+							}
+						: undefined;
 				await updaterClass.update((percent: number) => {
 					callback(index, versions.length, label, percent);
-				});
+				}, data);
 			} else {
 				throw new Error(`Update method not found in ${className}`);
 			}

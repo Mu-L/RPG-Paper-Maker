@@ -15,7 +15,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ACTION_KIND, ELEMENT_POSITION_KIND, Utils } from '../../common';
 import { Position } from '../../core/Position';
 import { Project } from '../../core/Project';
-import { Scene } from '../../Editor';
+import { MapElement, Scene } from '../../Editor';
 import { RootState, setSelectedPosition } from '../../store';
 import Button from '../Button';
 import Flex from '../Flex';
@@ -201,7 +201,12 @@ function PanelTransform({ kind }: Props) {
 			return;
 		}
 		dispatch(setSelectedPosition(position));
-		map.selectedMesh.position.copy(selectedElement.getLocalPosition(position));
+		const selectedLocalPosition = selectedElement.getLocalPosition(position).add(map.selectedPivotOffset);
+		if (selectedElement instanceof MapElement.Object3DBox && selectedElement.data.isTopLeft) {
+			selectedLocalPosition.x += 0.5 - MapElement.Object3DBox.COEF;
+			selectedLocalPosition.z += 0.5 - MapElement.Object3DBox.COEF;
+		}
+		map.selectedMesh.position.copy(selectedLocalPosition);
 		map.selectedMesh.rotation.copy(selectedElement.getLocalRotation(position));
 		map.selectedMesh.scale.copy(selectedElement.getLocalScale(position));
 		map.updateTransform();
@@ -238,7 +243,10 @@ function PanelTransform({ kind }: Props) {
 					position.y = value;
 				} else {
 					position.y = Math.floor(value / Project.SQUARE_SIZE);
-					position.yPixels = (((value % Project.SQUARE_SIZE) + Project.SQUARE_SIZE) % Project.SQUARE_SIZE) / Project.SQUARE_SIZE * 100;
+					position.yPixels =
+						((((value % Project.SQUARE_SIZE) + Project.SQUARE_SIZE) % Project.SQUARE_SIZE) /
+							Project.SQUARE_SIZE) *
+						100;
 				}
 				break;
 			case ACTION_KIND.ROTATE:

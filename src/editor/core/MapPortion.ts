@@ -1548,20 +1548,24 @@ class MapPortion {
 					geometry = new CustomGeometry();
 					if (object3D && material) {
 						if (this.map.selectedElement === object3D) {
-							object3D.updateGeometry(
-								geometry,
-								new Position(
-									0,
-									0,
-									0,
-									0,
-									0,
-									object3D.isCentered() ? 0 : 50,
-									object3D.isCentered() ? 0 : 50,
-								),
-								0,
-							);
+							const selectedGeometryPosition =
+								object3D instanceof MapElement.Object3DBox
+									? new Position(
+											0,
+											-MapElement.Object3DBox.COEF,
+											0,
+											0,
+											0,
+											object3D.data.isTopLeft ? 0 : -1,
+											object3D.data.isTopLeft ? 0 : -1,
+										)
+									: new Position(0, 0, 0, 0, 0, 0, 0);
+							object3D.updateGeometry(geometry, selectedGeometryPosition, 0);
 							const selectedLocalPosition = this.map.selectedElement.getLocalPosition(position);
+							if (object3D instanceof MapElement.Object3DBox && object3D.data.isTopLeft) {
+								selectedLocalPosition.x += 0.5 - MapElement.Object3DBox.COEF;
+								selectedLocalPosition.z += 0.5 - MapElement.Object3DBox.COEF;
+							}
 							// For custom OBJ models, center geometry at origin for correct
 							// rotation pivot, and track the offset for the transform system
 							if (object3D instanceof MapElement.Object3DCustom) {
