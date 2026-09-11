@@ -73,6 +73,9 @@ function GraphicsSelector({ sceneID, options, hidden = false, onChangeGraphicsKi
 		kind: number,
 		triggerHandler = true,
 	) => {
+		if (!picture) {
+			return;
+		}
 		const pic = isTileset
 			? Project.current!.pictures.getByID(PICTURE_KIND.TILESETS, Scene.Map.current!.model.getTileset().pictureID)
 			: Project.current!.pictures.getByID(PICTURE_KIND.CHARACTERS, picture.id);
