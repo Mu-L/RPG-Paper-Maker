@@ -986,7 +986,12 @@ ipcMain.handle('open-game', async (event, location, battleTest) => {
 			await closeGameProcess();
 			const args = process.defaultApp ? [__filename] : [];
 			if (process.platform === 'linux') {
-				args.push('--no-sandbox', '--force-device-scale-factor=1', '--ozone-platform=x11');
+				args.push(
+					'--no-sandbox',
+					'--force-device-scale-factor=1',
+					'--ozone-platform=x11',
+					'--disable-accelerated-video-decode',
+				);
 			}
 			args.push(
 				'--rpm-game-test',
